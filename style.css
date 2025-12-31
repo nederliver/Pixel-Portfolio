@@ -1,4 +1,21 @@
 @import url('https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,100..900;1,100..900&family=Micro+5&family=Outfit:wght@100..900&family=Rubik:ital,wght@0,300..900;1,300..900&display=swap');
+@media only screen and (device-width: 1280px),
+only screen and (max-width:1280px){
+  .contents {
+    scale: 65%;
+    display: block;
+    flex-direction: column;
+    align-items: center;
+  }
+  .pp-modal-overlay {
+    scale: 165%;
+  }
+  .pp-modal-arrow {
+    scale: 80%;
+  }
+
+}
+
 :root{
   --text: #f5ffe8;
   --subtitle: #d5d6e2;
@@ -6,9 +23,17 @@
   --green: #92e8c0;
   --recipe-bg: #080a16be;
 }
+html, body {
+  height: 100%;
+}
 body {
     image-rendering: pixelated;
-    overflow: hidden;
+    display: flex;
+    align-items: center;      /* vertical centering */
+    justify-content: center;  /* horizontal centering (optional) */
+    min-height: 100vh;
+    margin: 0;
+    overflow: hidden; /* keep your existing behavior */
     image-rendering: -moz-crisp-edges;
     image-rendering: crisp-edges;
     font-family: 'Micro 5', sans-serif;
@@ -21,12 +46,15 @@ body {
     background-color: #14182e;
 }
 .main-window {
-    position: relative;
-    top: 460px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+  position: absolute;   /* make it positionable */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); /* true centering */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
+
 .main-window-background {
     position: absolute;
     z-index: -1;
