@@ -1,11 +1,274 @@
-// script.js
+
+
 (function () {
+  
   document.addEventListener('DOMContentLoaded', () => {
-    const MAX_WINDOWS_INCLUDING_MAIN = 4;
+    
+    document.addEventListener('click', (ev) => {
+  const el = ev.target.closest('.username');
+  if (!el) return;
+
+  ev.stopPropagation();
+
+  // prevent copying while cooldown is active
+  if (el.dataset.cooldown === 'true') return;
+
+  const originalText = el.dataset.originalText || el.innerText.trim();
+  if (!originalText) return;
+
+  el.dataset.originalText = originalText;
+
+  navigator.clipboard.writeText(originalText).then(() => {
+    el.dataset.cooldown = 'true';
+
+    el.innerText = 'Copied';
+    el.classList.add('copied');
+
+    setTimeout(() => {
+      el.innerText = el.dataset.originalText;
+      el.classList.remove('copied');
+      el.dataset.cooldown = 'false';
+    }, 1000);
+  }).catch(err => {
+    console.error('Copy failed:', err);
+  });
+});
+
+    const MAX_WINDOWS_INCLUDING_MAIN = 5;
     let zIndexCounter = 10;
     const openTypes = new Set();
 
     let imageModalOpen = false;
+/* ===========================
+   Recipe Modal (FULL CODE)
+   =========================== */
+
+let recipeModalEl = null;
+let recipeContentEl = null;
+let recipeDownloadBlob = null;
+
+/* ---------- utils ---------- */
+
+function escapeHtml(str) {
+  return String(str).replace(/[&<>"']/g, c => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  }[c]));
+}
+
+/* very small markdown renderer */
+function renderMarkdown(md) {
+  const lines = md.replace(/\r\n/g, '\n').split('\n');
+  let html = '';
+  let inCode = false;
+  let inList = false;
+
+  const closeList = () => {
+    if (inList) {
+      html += '</ul>';
+      inList = false;
+    }
+  };
+
+  const inline = (s) => {
+    s = escapeHtml(s);
+    s = s.replace(/`([^`]+)`/g, '<code>$1</code>');
+    s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    s = s.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+    s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g,
+      (_, t, u) => `<a class="is-link" href="${escapeHtml(u)}" target="_blank">${t}</a>`
+    );
+    return s;
+  };
+
+  for (const line of lines) {
+    if (line.trim().startsWith('```')) {
+      if (!inCode) {
+        inCode = true;
+        html += '<pre><code>';
+      } else {
+        inCode = false;
+        html += '</code></pre>';
+      }
+      continue;
+    }
+
+    if (inCode) {
+      html += escapeHtml(line) + '\n';
+      continue;
+    }
+
+    const h = line.match(/^(#{1,6})\s+(.*)$/);
+    if (h) {
+      closeList();
+      html += `<h${h[1].length}>${inline(h[2])}</h${h[1].length}>`;
+      continue;
+    }
+
+    const li = line.match(/^\s*[-*]\s+(.*)$/);
+    if (li) {
+      if (!inList) {
+        inList = true;
+        html += '<ul>';
+      }
+      html += `<li>${inline(li[1])}</li>`;
+      continue;
+    }
+
+    if (line.trim() === '') {
+      closeList();
+      html += '<br>';
+      continue;
+    }
+
+    closeList();
+    html += `<p>${inline(line)}</p>`;
+  }
+
+  closeList();
+  if (inCode) html += '</code></pre>';
+
+  return html;
+}
+
+/* ---------- modal creation ---------- */
+
+function createRecipeModalIfNeeded() {
+  if (recipeModalEl) return recipeModalEl;
+
+  const overlay = document.createElement('div');
+  overlay.className = 'pp-modal-overlay';
+  overlay.style.display = 'none';
+  overlay.style.zIndex = String(zIndexCounter + 1000);
+
+  const inner = document.createElement('div');
+  inner.className = 'pp-recipe-inner';
+  inner.style.position = 'relative';
+  inner.style.maxWidth = '900px';
+  inner.style.maxHeight = '85vh';
+  inner.style.display = 'flex';
+  inner.style.flexDirection = 'column';
+
+  /* close button */
+  const closeBtn = document.createElement('button');
+  closeBtn.className = 'pp-recipe-close-btn';
+  const closeImg = document.createElement('img');
+  closeImg.src = 'textures/close.png';
+  closeImg.draggable = false;
+  closeBtn.appendChild(closeImg);
+
+  closeBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    closeRecipeModal();
+  });
+
+  /* content */
+  const content = document.createElement('div');
+  content.className = 'pp-recipe-content';
+  content.style.flex = '1';
+  content.style.overflow = 'auto';
+  content.style.padding = '22px';
+  content.style.color = 'var(--text)';
+  content.style.fontFamily = 'Micro 5, sans-serif';
+  content.style.fontSize = '26px';
+  recipeContentEl = content;
+
+  /* download button (bottom) */
+  const downloadBtn = document.createElement('button');
+  downloadBtn.className = 'pp-recipe-download-btn';
+  const downloadImg = document.createElement('img');
+  downloadImg.src = 'textures/download.png';
+  downloadImg.draggable = false;
+  downloadBtn.appendChild(downloadImg);
+
+  downloadBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (!recipeDownloadBlob) return;
+
+    const url = URL.createObjectURL(recipeDownloadBlob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'recipe.md';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  });
+
+  inner.appendChild(closeBtn);
+  inner.appendChild(content);
+  inner.appendChild(downloadBtn);
+  overlay.appendChild(inner);
+
+  inner.addEventListener('click', e => e.stopPropagation());
+  overlay.addEventListener('click', e => e.stopPropagation());
+
+  /* escape key */
+  window.addEventListener('keydown', (e) => {
+    if (!imageModalOpen) return;
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      closeRecipeModal();
+    }
+  });
+
+  document.body.appendChild(overlay);
+  recipeModalEl = overlay;
+  return overlay;
+}
+
+/* ---------- open / close ---------- */
+
+function openRecipeModal(path = '/recipe.md') {
+  if (imageModalOpen) return;
+
+  const modal = createRecipeModalIfNeeded();
+  modal.style.display = 'flex';
+  modal.style.zIndex = String(zIndexCounter + 1000);
+
+  imageModalOpen = true;
+  document.body.classList.add('pp-modal-open');
+  windows.forEach(w => w.dataset.modalOpen = 'true');
+
+  fetch(path, { cache: 'no-cache' })
+    .then(r => {
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      return r.text();
+    })
+    .then(text => {
+      recipeDownloadBlob = new Blob([text], { type: 'text/markdown' });
+      recipeContentEl.innerHTML = renderMarkdown(text);
+    })
+    .catch(err => {
+      recipeContentEl.innerHTML =
+        `<p><strong>Failed to load recipe.md</strong></p><pre>${escapeHtml(err)}</pre>`;
+      recipeDownloadBlob = null;
+    });
+}
+
+function closeRecipeModal() {
+  if (!recipeModalEl) return;
+  recipeModalEl.style.display = 'none';
+  imageModalOpen = false;
+  document.body.classList.remove('pp-modal-open');
+  windows.forEach(w => delete w.dataset.modalOpen);
+  recipeContentEl.innerHTML = '';
+  recipeDownloadBlob = null;
+}
+
+/* ---------- trigger ---------- */
+
+document.querySelectorAll('.main-window-description').forEach(el => {
+  el.style.cursor = 'pointer';
+  el.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    openRecipeModal('/recipe.md');
+  });
+});
 
     const PROJECT_IMAGES = [
         { src: 'textures/projects/project_1.png', name: 'expanded v2' },
@@ -30,6 +293,7 @@
     const dockProjects = document.querySelector('.projects-button');
     const dockLinks = document.querySelector('.links-button');
     const dockSupport = document.querySelector('.support-button');
+    const dockMCSkin = document.querySelector('.mc-skin-button');
 
     let modalOverlayEl = null;
     let modalImgEl = null;
@@ -187,6 +451,7 @@
       if (img) text = (img.alt || img.src || '').toLowerCase();
       if (text.includes('project')) return 'projects';
       if (text.includes('link')) return 'links';
+      if (text.includes('mc skin')) return 'mc-skin';
       if (text.includes('support')) return 'support';
       // fallback: 'window-#'
       return `window-${fallbackIndex}`;
@@ -339,6 +604,7 @@
         if (ev.button && ev.button !== 0) return;
         if (ev.target.closest('.close-button')) return;
         if (ev.target.closest('.is-link')) return;
+        if (ev.target.closest('.username')) return;
         if (getComputedStyle(winEl).display === 'none') return;
         ev.preventDefault();
 
@@ -408,11 +674,13 @@
     wireDock(dockProjects, 'projects');
     wireDock(dockLinks, 'links');
     wireDock(dockSupport, 'support');
+    wireDock(dockMCSkin, 'mc-skin');
     windows.forEach(win => {
       win.addEventListener('click', (ev) => {
         if (getComputedStyle(win).display === 'none') return;
         if (ev.target.closest('.close-button')) return;
         if (ev.target.closest('.is-link')) return;
+        if (ev.target.closest('.username')) return;
         bringToFront(win);
       });
     });

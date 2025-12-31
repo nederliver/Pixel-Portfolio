@@ -1,6 +1,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,100..900;1,100..900&family=Micro+5&family=Outfit:wght@100..900&family=Rubik:ital,wght@0,300..900;1,300..900&display=swap');
+:root{
+  --text: #f5ffe8;
+  --subtitle: #d5d6e2;
+  --highlight: #ffee83;
+  --green: #92e8c0;
+  --recipe-bg: #080a16be;
+}
 body {
     image-rendering: pixelated;
+    overflow: hidden;
     image-rendering: -moz-crisp-edges;
     image-rendering: crisp-edges;
     font-family: 'Micro 5', sans-serif;
@@ -31,17 +39,20 @@ body {
     display: flex;
     flex-direction: row;    
     gap: 16px;
-    padding: 75px;
+    padding: 125px;
     height: 0;
 }
 .main-window-description{
-    color: #dfe0e8;
+    color: var(--subtitle);
     font-size: 26px;
     text-shadow: 3px 3px 0px #404973;
 }
+.main-window-description:hover{
+  color: var(--highlight);
+}
 .main-window-description-title {
     margin-top: 8px;
-    color: #f5ffe8;
+    color: var(--text);
     font-size: 40px;
     text-shadow: 4px 4px 0px #404973
 }
@@ -63,14 +74,15 @@ body {
 }
 .window-description{
     margin-left: 45px;
-    color: #dfe0e8;
+    color: var(--subtitle);
     font-size: 26px;
-    text-shadow: 3px 3px 0px #404973
+    text-shadow: 3px 3px 0px #404973;
+    padding-bottom: 8px;
 }
 .window-description-title {
     margin-left: 45px;
-    color: #f5ffe8;
-    font-size: 40px;
+    color: var(--text);
+    font-size: 35px;
     text-shadow: 4px 4px 0px #404973
 }
 .close-button {
@@ -79,10 +91,21 @@ body {
     margin-left: 491px;
 }
 .is-link {
-    color: #f5ffe8;
-    font-size: 40px;
-    text-decoration: none;
+  color: var(--text);
+  font-size: 36px;
+  text-decoration: none;
 }
+.is-link:hover{
+  color: var(--highlight);
+}
+.username:hover {
+  color: var(--highlight);
+}
+
+.username.copied {
+  color: var(--green);
+}
+
 
 /* ===========================
    Modal & Project buttons
@@ -100,7 +123,6 @@ body {
   backdrop-filter: blur(2px);
   pointer-events: auto;
 }
-
 /* Inner modal wrapper - now positioned relative so close button can overlay the image */
 .pp-modal-inner {
   position: relative;
@@ -113,7 +135,29 @@ body {
   padding: 8px;
   box-sizing: border-box;
 }
+.pp-recipe-inner {
+  background: var(--recipe-bg);
+  padding: 20px;
+}
 
+/* Close button (top-right) */
+.pp-recipe-close-btn {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+/* Download button (bottom) */
+.pp-recipe-download-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  margin: 10px auto 16px;
+  display: block;
+}
 /* Modal image */
 .pp-modal-img {
   max-width: 75vw;
@@ -124,8 +168,8 @@ body {
   user-select: none;
   -webkit-user-drag: none;
 }
-.dock:hover {
-    cursor: pointer;
+.projects-button:hover, .links-button:hover, .support-button:hover, .mc-skin-button:hover {
+  cursor: pointer;
 }
 /* Close button overlaid in the top-right corner of the modal image */
 .pp-modal-close-btn {
@@ -173,8 +217,8 @@ body.pp-modal-open {
   padding: 0;
   margin: 0;
   cursor: pointer;
-  font-size: 40px; 
-  color: #f5ffe8;
+  font-size: 36px; 
+  color: var(--text);
   text-shadow: 3px 3px 0px #404973;
   text-decoration: none;
 
@@ -182,7 +226,9 @@ body.pp-modal-open {
   width: fit-content;
   line-height: 30px;
 }
-
+.project-image-buttons button:hover{
+  color: var(--highlight);
+}
 /* Arrow controls (left/right middle of overlay) */
 .pp-modal-arrow {
   position: relative;       /* positioned relative to the overlay (which is fixed) */
