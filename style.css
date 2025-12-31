@@ -1,0 +1,265 @@
+@import url('https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,100..900;1,100..900&family=Micro+5&family=Outfit:wght@100..900&family=Rubik:ital,wght@0,300..900;1,300..900&display=swap');
+body {
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+    font-family: 'Micro 5', sans-serif;
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+    -khtml-user-select: none; /* Konqueror HTML */
+    -moz-user-select: none; /* Old versions of Firefox */
+    -ms-user-select: none; /* Internet Explorer/Edge */
+    user-select: none; 
+    background-color: #14182e;
+}
+.main-window {
+    position: relative;
+    top: 460px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.main-window-background {
+    position: absolute;
+    z-index: -1;
+}
+.main-window-title {
+   margin-top: 58px;
+}
+.dock {
+    position: relative;
+    display: flex;
+    flex-direction: row;    
+    gap: 16px;
+    padding: 75px;
+    height: 0;
+}
+.main-window-description{
+    color: #dfe0e8;
+    font-size: 26px;
+    text-shadow: 3px 3px 0px #404973;
+}
+.main-window-description-title {
+    margin-top: 8px;
+    color: #f5ffe8;
+    font-size: 40px;
+    text-shadow: 4px 4px 0px #404973
+}
+.window {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 460px;
+}
+
+.window-background {
+    position: absolute;
+    z-index: -1;
+}
+.window-title {
+    margin-top: 40px;
+    margin-left: 45px;
+}
+.window-description{
+    margin-left: 45px;
+    color: #dfe0e8;
+    font-size: 26px;
+    text-shadow: 3px 3px 0px #404973
+}
+.window-description-title {
+    margin-left: 45px;
+    color: #f5ffe8;
+    font-size: 40px;
+    text-shadow: 4px 4px 0px #404973
+}
+.close-button {
+    position: absolute;
+    margin-top: 8px;
+    margin-left: 491px;
+}
+.is-link {
+    color: #f5ffe8;
+    font-size: 40px;
+    text-decoration: none;
+}
+
+/* ===========================
+   Modal & Project buttons
+   =========================== */
+
+/* Modal overlay + container */
+.pp-modal-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(20,24,46,0.7);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+  pointer-events: auto;
+}
+
+/* Inner modal wrapper - now positioned relative so close button can overlay the image */
+.pp-modal-inner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  max-width: 75vw;
+  max-height: 75vh;
+  padding: 8px;
+  box-sizing: border-box;
+}
+
+/* Modal image */
+.pp-modal-img {
+  max-width: 75vw;
+  max-height: calc(75vh - 16px); /* leave small breathing room for overlayed controls */
+  object-fit: contain;
+  display: block;
+  box-shadow: 0 8px 30px rgba(20,24,46,0.5);
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.dock:hover {
+    cursor: pointer;
+}
+/* Close button overlaid in the top-right corner of the modal image */
+.pp-modal-close-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 6px;
+  background: transparent; /* background removed as requested */
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(20,24,46,0.35);
+}
+
+/* Keep close icon image non-interactive so the button receives the click */
+.pp-modal-close-btn img {
+  display: block;
+  width: 100%;
+  height: auto;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* Prevent scrolling while modal open */
+body.pp-modal-open {
+  overflow: hidden;
+}
+
+/* Container for project image buttons inside Projects window */
+.project-image-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+/* Buttons used in projects window */
+.project-image-buttons button {
+  font-family: 'Micro 5', sans-serif;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  font-size: 40px; 
+  color: #f5ffe8;
+  text-shadow: 3px 3px 0px #404973;
+  text-decoration: none;
+
+  display: inline;           /* key: shrink click area to text */
+  width: fit-content;
+  line-height: 30px;
+}
+
+/* Arrow controls (left/right middle of overlay) */
+.pp-modal-arrow {
+  position: relative;       /* positioned relative to the overlay (which is fixed) */
+  height: auto;
+  display: block;
+  align-items: center;
+  padding: 4px;
+  border-radius: 6px;
+  background: transparent; /* transparent per your request */
+  border: none;
+  cursor: pointer;
+  z-index: 2;
+}
+
+/* left arrow sits at left middle of overlay */
+.pp-modal-prev {
+  left: 125px;
+}
+
+/* right arrow sits at right middle of overlay */
+.pp-modal-next {
+  right: 125px;
+}
+
+/* arrow images fill button area */
+.pp-modal-arrow img {
+  display: block;
+  width: 100%;
+  height: auto;
+  user-select: none;
+  pointer-events: none;
+}
+/* http://meyerweb.com/eric/tools/css/reset/ 
+   v2.0 | 20110126
+   License: none (public domain)
+*/
+
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed, 
+figure, figcaption, footer, header, hgroup, 
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font-size: 100%;
+	font: Micro 5;
+	vertical-align: baseline;
+}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, 
+footer, header, hgroup, menu, nav, section {
+	display: block;
+}
+body {
+	line-height: 1;
+}
+ol, ul {
+	list-style: none;
+}
+blockquote, q {
+	quotes: none;
+}
+blockquote:before, blockquote:after,
+q:before, q:after {
+	content: '';
+	content: none;
+}
+table {
+	border-collapse: collapse;
+	border-spacing: 0;
+}
