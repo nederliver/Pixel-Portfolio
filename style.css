@@ -196,7 +196,7 @@ body {
   user-select: none;
   -webkit-user-drag: none;
 }
-.projects-button:hover, .links-button:hover, .support-button:hover, .mc-skin-button:hover {
+.projects-button:hover, .links-button:hover, .support-button:hover, .mc-skin-button:hover, .discord-button:hover{
   cursor: pointer;
 }
 /* Close button overlaid in the top-right corner of the modal image */

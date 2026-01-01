@@ -293,6 +293,7 @@ document.querySelectorAll('.main-window-description').forEach(el => {
     const dockProjects = document.querySelector('.projects-button');
     const dockLinks = document.querySelector('.links-button');
     const dockSupport = document.querySelector('.support-button');
+    const dockDiscord = document.querySelector('.discord-button');
     const dockMCSkin = document.querySelector('.mc-skin-button');
 
     let modalOverlayEl = null;
@@ -453,6 +454,7 @@ document.querySelectorAll('.main-window-description').forEach(el => {
       if (text.includes('link')) return 'links';
       if (text.includes('mc skin')) return 'mc-skin';
       if (text.includes('support')) return 'support';
+      if (text.includes('discord')) return 'discord';
       // fallback: 'window-#'
       return `window-${fallbackIndex}`;
     }
@@ -674,6 +676,7 @@ document.querySelectorAll('.main-window-description').forEach(el => {
     wireDock(dockProjects, 'projects');
     wireDock(dockLinks, 'links');
     wireDock(dockSupport, 'support');
+    wireDock(dockDiscord, 'discord');
     wireDock(dockMCSkin, 'mc-skin');
     windows.forEach(win => {
       win.addEventListener('click', (ev) => {
