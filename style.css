@@ -1,5 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,100..900;1,100..900&family=Micro+5&family=Outfit:wght@100..900&family=Rubik:ital,wght@0,300..900;1,300..900&display=swap');
-@media only screen and (device-width: 1280px),
+/* @media only screen and (device-width: 1280px),
 only screen and (max-width:1280px){
   .contents {
     scale: 65%;
@@ -14,14 +14,14 @@ only screen and (max-width:1280px){
     scale: 80%;
   }
 
-}
+} */
 
 :root{
-  --text: #f5ffe8;
-  --subtitle: #d5d6e2;
-  --highlight: #ffee83;
-  --green: #92e8c0;
-  --recipe-bg: #080a16be;
+  --text: #ffffff;
+  --subtitle: #d9bdc8;
+  --highlight: #fcef8d;
+  --green: #aee2ff;
+  --recipe-bg: #1f102a;
 }
 html, body {
   height: 100%;
@@ -43,7 +43,7 @@ body {
     -moz-user-select: none; /* Old versions of Firefox */
     -ms-user-select: none; /* Internet Explorer/Edge */
     user-select: none; 
-    background-color: #14182e;
+    background-color: #1f102a;
 }
 .main-window {
   position: absolute;   /* make it positionable */
@@ -73,7 +73,7 @@ body {
 .main-window-description{
     color: var(--subtitle);
     font-size: 26px;
-    text-shadow: 3px 3px 0px #404973;
+    text-shadow: 3px 3px 0px #873555;
 }
 .main-window-description:hover{
   color: var(--highlight);
@@ -82,7 +82,7 @@ body {
     margin-top: 8px;
     color: var(--text);
     font-size: 40px;
-    text-shadow: 4px 4px 0px #404973
+    text-shadow: 4px 4px 0px #873555
 }
 .window {
     position: relative;
@@ -104,14 +104,14 @@ body {
     margin-left: 45px;
     color: var(--subtitle);
     font-size: 26px;
-    text-shadow: 3px 3px 0px #404973;
+    text-shadow: 3px 3px 0px #873555;
     padding-bottom: 8px;
 }
 .window-description-title {
     margin-left: 45px;
     color: var(--text);
     font-size: 35px;
-    text-shadow: 4px 4px 0px #404973
+    text-shadow: 4px 4px 0px #873555
 }
 .close-button {
     position: absolute;
@@ -146,7 +146,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(20,24,46,0.7);
+  background: rgba(0, 0, 0, 0.226);
   -webkit-backdrop-filter: blur(2px);
   backdrop-filter: blur(2px);
   pointer-events: auto;
@@ -247,7 +247,7 @@ body.pp-modal-open {
   cursor: pointer;
   font-size: 36px; 
   color: var(--text);
-  text-shadow: 3px 3px 0px #404973;
+  text-shadow: 3px 3px 0px #873555;
   text-decoration: none;
 
   display: inline;           /* key: shrink click area to text */
