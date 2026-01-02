@@ -1,20 +1,4 @@
 @import url('https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,100..900;1,100..900&family=Micro+5&family=Outfit:wght@100..900&family=Rubik:ital,wght@0,300..900;1,300..900&display=swap');
-/* @media only screen and (device-width: 1280px),
-only screen and (max-width:1280px){
-  .contents {
-    scale: 65%;
-    display: block;
-    flex-direction: column;
-    align-items: center;
-  }
-  .pp-modal-overlay {
-    scale: 165%;
-  }
-  .pp-modal-arrow {
-    scale: 80%;
-  }
-
-} */
 
 :root{
   --text: #ffffff;
@@ -23,293 +7,6 @@ only screen and (max-width:1280px){
   --green: #aee2ff;
   --recipe-bg: #1f102a;
 }
-
-#sound-toggle {
-  position: fixed;
-  top: 22px;
-  right: 22px;
-  border: none;
-  background: transparent;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-
-html, body {
-  height: 100%;
-}
-body {
-    image-rendering: pixelated;
-    display: flex;
-    align-items: center;      /* vertical centering */
-    justify-content: center;  /* horizontal centering (optional) */
-    min-height: 100vh;
-    margin: 0;
-    overflow: hidden; /* keep your existing behavior */
-    image-rendering: -moz-crisp-edges;
-    image-rendering: crisp-edges;
-    font-family: 'Micro 5', sans-serif;
-    -webkit-touch-callout: none; /* iOS Safari */
-    -webkit-user-select: none; /* Safari */
-    -khtml-user-select: none; /* Konqueror HTML */
-    -moz-user-select: none; /* Old versions of Firefox */
-    -ms-user-select: none; /* Internet Explorer/Edge */
-    user-select: none; 
-    background-color: #1f102a;
-}
-.main-window {
-  position: absolute;   /* make it positionable */
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%); /* true centering */
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.main-window-background {
-    position: absolute;
-    z-index: -1;
-}
-.main-window-title {
-   margin-top: 58px;
-   cursor: pointer;
-}
-.dock {
-    position: relative;
-    display: flex;
-    flex-direction: row;    
-    gap: 16px;
-    padding: 125px;
-    height: 0;
-}
-.main-window-description{
-    color: var(--subtitle);
-    font-size: 26px;
-    text-shadow: 3px 3px 0px #873555;
-}
-.main-window-description:hover{
-  color: var(--highlight);
-}
-.main-window-description-title {
-    margin-top: 8px;
-    color: var(--text);
-    font-size: 40px;
-    text-shadow: 4px 4px 0px #873555
-}
-.window {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-top: 460px;
-}
-
-.window-background {
-    position: absolute;
-    z-index: -1;
-}
-.window-title {
-    margin-top: 40px;
-    margin-left: 45px;
-}
-.window-description{
-    margin-left: 45px;
-    color: var(--subtitle);
-    font-size: 26px;
-    text-shadow: 3px 3px 0px #873555;
-    padding-bottom: 8px;
-}
-.window-description-title {
-    margin-left: 45px;
-    color: var(--text);
-    font-size: 35px;
-    text-shadow: 4px 4px 0px #873555
-}
-.close-button {
-    position: absolute;
-    margin-top: 8px;
-    margin-left: 491px;
-}
-.is-link {
-  color: var(--text);
-  font-size: 36px;
-  text-decoration: none;
-}
-.is-link:hover{
-  color: var(--highlight);
-}
-.username:hover {
-  color: var(--highlight);
-}
-
-.username.copied {
-  color: var(--green);
-}
-
-
-/* ===========================
-   Modal & Project buttons
-   =========================== */
-
-/* Modal overlay + container */
-.pp-modal-overlay {
-  position: fixed;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.226);
-  -webkit-backdrop-filter: blur(2px);
-  backdrop-filter: blur(2px);
-  pointer-events: auto;
-}
-/* Inner modal wrapper - now positioned relative so close button can overlay the image */
-.pp-modal-inner {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  max-width: 75vw;
-  max-height: 75vh;
-  padding: 8px;
-  box-sizing: border-box;
-}
-.pp-recipe-inner {
-  background: var(--recipe-bg);
-  padding: 20px;
-}
-
-/* Close button (top-right) */
-.pp-recipe-close-btn {
-  position: absolute;
-  top: 8px;
-  right: 10px;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-}
-
-/* Download button (bottom) */
-.pp-recipe-download-btn {
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  margin: 10px auto 16px;
-  display: block;
-}
-/* Modal image */
-.pp-modal-img {
-  max-width: 75vw;
-  max-height: calc(75vh - 16px); /* leave small breathing room for overlayed controls */
-  object-fit: contain;
-  display: block;
-  box-shadow: 0 8px 30px rgba(20,24,46,0.5);
-  user-select: none;
-  -webkit-user-drag: none;
-}
-.projects-button:hover, .links-button:hover, .support-button:hover, .mc-skin-button:hover, .discord-button:hover{
-  cursor: pointer;
-}
-/* Close button overlaid in the top-right corner of the modal image */
-.pp-modal-close-btn {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 4px;
-  border-radius: 6px;
-  background: transparent; /* background removed as requested */
-  border: none;
-  cursor: pointer;
-  box-shadow: 0 2px 8px rgba(20,24,46,0.35);
-}
-
-/* Keep close icon image non-interactive so the button receives the click */
-.pp-modal-close-btn img {
-  display: block;
-  width: 100%;
-  height: auto;
-  user-select: none;
-  pointer-events: none;
-}
-
-/* Prevent scrolling while modal open */
-body.pp-modal-open {
-  overflow: hidden;
-}
-
-/* Container for project image buttons inside Projects window */
-.project-image-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-top: 8px;
-}
-
-/* Buttons used in projects window */
-.project-image-buttons button {
-  font-family: 'Micro 5', sans-serif;
-  background: transparent;
-  border: none;
-  padding: 0;
-  margin: 0;
-  cursor: pointer;
-  font-size: 36px; 
-  color: var(--text);
-  text-shadow: 3px 3px 0px #873555;
-  text-decoration: none;
-
-  display: inline;           /* key: shrink click area to text */
-  width: fit-content;
-  line-height: 30px;
-}
-.project-image-buttons button:hover{
-  color: var(--highlight);
-}
-/* Arrow controls (left/right middle of overlay) */
-.pp-modal-arrow {
-  position: relative;       /* positioned relative to the overlay (which is fixed) */
-  height: auto;
-  display: block;
-  align-items: center;
-  padding: 4px;
-  border-radius: 6px;
-  background: transparent; /* transparent per your request */
-  border: none;
-  cursor: pointer;
-  z-index: 2;
-}
-
-/* left arrow sits at left middle of overlay */
-.pp-modal-prev {
-  left: 125px;
-}
-
-/* right arrow sits at right middle of overlay */
-.pp-modal-next {
-  right: 125px;
-}
-
-/* arrow images fill button area */
-.pp-modal-arrow img {
-  display: block;
-  width: 100%;
-  height: auto;
-  user-select: none;
-  pointer-events: none;
-}
-/* http://meyerweb.com/eric/tools/css/reset/ 
-   v2.0 | 20110126
-   License: none (public domain)
-*/
 
 html, body, div, span, applet, object, iframe,
 h1, h2, h3, h4, h5, h6, p, blockquote, pre,
@@ -331,26 +28,303 @@ time, mark, audio, video {
 	font: Micro 5;
 	vertical-align: baseline;
 }
-/* HTML5 display-role reset for older browsers */
+
 article, aside, details, figcaption, figure, 
 footer, header, hgroup, menu, nav, section {
 	display: block;
 }
+
 body {
 	line-height: 1;
 }
+
 ol, ul {
 	list-style: none;
 }
+
 blockquote, q {
 	quotes: none;
 }
+
 blockquote:before, blockquote:after,
 q:before, q:after {
 	content: '';
 	content: none;
 }
+
 table {
 	border-collapse: collapse;
 	border-spacing: 0;
+}
+
+#sound-toggle {
+  position: fixed;
+  top: 22px;
+  right: 22px;
+  border: none;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+    image-rendering: pixelated;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    margin: 0;
+    overflow: hidden;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+    font-family: 'Micro 5', sans-serif;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none; 
+    background-color: #1f102a;
+}
+
+.main-window {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.main-window-background {
+    position: absolute;
+    z-index: -1;
+}
+
+.main-window-title {
+   margin-top: 58px;
+   cursor: pointer;
+}
+
+.dock {
+    position: relative;
+    display: flex;
+    flex-direction: row;    
+    gap: 16px;
+    padding: 125px;
+    height: 0;
+}
+
+.main-window-description{
+    color: var(--subtitle);
+    font-size: 26px;
+    text-shadow: 3px 3px 0px #873555;
+}
+
+.main-window-description:hover{
+  color: var(--highlight);
+}
+
+.main-window-description-title {
+    margin-top: 8px;
+    color: var(--text);
+    font-size: 40px;
+    text-shadow: 4px 4px 0px #873555
+}
+
+.window {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 460px;
+}
+
+.window-background {
+    position: absolute;
+    z-index: -1;
+}
+
+.window-title {
+    margin-top: 40px;
+    margin-left: 45px;
+}
+
+.window-description{
+    margin-left: 45px;
+    color: var(--subtitle);
+    font-size: 26px;
+    text-shadow: 3px 3px 0px #873555;
+    padding-bottom: 8px;
+}
+
+.window-description-title {
+    margin-left: 45px;
+    color: var(--text);
+    font-size: 35px;
+    text-shadow: 4px 4px 0px #873555
+}
+
+.close-button {
+    position: absolute;
+    margin-top: 8px;
+    margin-left: 491px;
+}
+
+.is-link {
+  color: var(--text);
+  font-size: 36px;
+  text-decoration: none;
+}
+
+.is-link:hover{
+  color: var(--highlight);
+}
+
+.username:hover {
+  color: var(--highlight);
+}
+
+.username.copied {
+  color: var(--green);
+}
+
+.pp-modal-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.226);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+  pointer-events: auto;
+}
+
+.pp-modal-inner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  max-width: 75vw;
+  max-height: 75vh;
+  padding: 8px;
+  box-sizing: border-box;
+}
+
+.pp-recipe-inner {
+  background: var(--recipe-bg);
+  padding: 20px;
+}
+
+.pp-recipe-close-btn, .pp-modal-close-btn {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.pp-modal-close-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(20,24,46,0.35);
+  right: 8px;
+}
+
+.pp-recipe-download-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  margin: 10px auto 16px;
+  display: block;
+}
+
+.pp-modal-img {
+  max-width: 75vw;
+  max-height: calc(75vh - 16px);
+  object-fit: contain;
+  display: block;
+  box-shadow: 0 8px 30px rgba(20,24,46,0.5);
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.projects-button:hover, .links-button:hover, .support-button:hover, .mc-skin-button:hover, .discord-button:hover{
+  cursor: pointer;
+}
+
+.pp-modal-close-btn img, .pp-modal-arrow img {
+  display: block;
+  width: 100%;
+  height: auto;
+  user-select: none;
+  pointer-events: none;
+}
+
+body.pp-modal-open {
+  overflow: hidden;
+}
+
+.project-image-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.project-image-buttons button {
+  font-family: 'Micro 5', sans-serif;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  font-size: 36px; 
+  color: var(--text);
+  text-shadow: 3px 3px 0px #873555;
+  text-decoration: none;
+  display: inline;
+  width: fit-content;
+  line-height: 30px;
+}
+
+.project-image-buttons button:hover{
+  color: var(--highlight);
+}
+
+.pp-modal-arrow {
+  position: relative;
+  height: auto;
+  display: block;
+  align-items: center;
+  padding: 4px;
+  border-radius: 6px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.pp-modal-prev {
+  left: 125px;
+}
+
+.pp-modal-next {
+  right: 125px;
 }

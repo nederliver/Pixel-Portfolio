@@ -1,30 +1,13 @@
-// script.js
 (function () {
-  // -----------------------
-  // Sound players
-  // -----------------------
-  // Put these files in /sounds next to index.html:
-  // - click.mp3
-  // - click_close.mp3
-  // - click_link.mp3
-  // - click_copy.mp3
-  // - click_download.mp3
-  // - click_toggle.mp3   <-- new toggle sound
-  //
-  // Put these images in /textures:
-  // - sounds_switch_on.png
-  // - sounds_switch_off.png
-
   const soundFiles = {
     click: 'sounds/click.mp3',
     close: 'sounds/click_close.mp3',
     link:  'sounds/click_link.mp3',
     copy:  'sounds/click_copy.mp3',
     download: 'sounds/click_download.mp3',
-    toggle: 'sounds/click_toggle.mp3' // toggle sound (always played on mute/unmute)
+    toggle: 'sounds/click_toggle.mp3'
   };
 
-  // preload base Audio objects
   const sounds = {};
   Object.keys(soundFiles).forEach(k => {
     try {
@@ -36,16 +19,14 @@
     }
   });
 
-  // persisted sound enabled flag (default true)
   let soundEnabled = localStorage.getItem('pp_sounds_enabled') !== 'false';
 
   function setSoundEnabled(enabled) {
     soundEnabled = !!enabled;
     try {
       localStorage.setItem('pp_sounds_enabled', soundEnabled ? 'true' : 'false');
-    } catch (e) { /* ignore storage errors */ }
+    } catch (e) {}
     if (!soundEnabled) {
-      // stop/reset base audio nodes (do not worry about toggle here; we'll play toggle after)
       Object.keys(sounds).forEach(key => {
         try {
           const a = sounds[key];
@@ -59,7 +40,6 @@
     updateSoundToggleUI();
   }
 
-  // Helper: play sound by key (respects soundEnabled)
   function playSound(key) {
     if (!soundEnabled) return;
     const base = sounds[key];
@@ -83,7 +63,6 @@
     }
   }
 
-  // Play toggle sound regardless of soundEnabled (we want audible feedback even when muting)
   function playToggleSound() {
     const base = sounds.toggle;
     if (!base) return;
@@ -106,17 +85,15 @@
     }
   }
 
-  function playClick() { playSound('click'); }
-  function playClose() { playSound('close'); }
-  function playLink() { playSound('link'); }
-  function playCopy() { playSound('copy'); }
-  function playDownload() { playSound('download'); }
+  const playClick = () => playSound('click');
+  const playClose = () => playSound('close');
+  const playLink = () => playSound('link');
+  const playCopy = () => playSound('copy');
+  const playDownload = () => playSound('download');
 
-  // -----------------------
-  // Sound toggle UI helpers
-  // -----------------------
   const SWITCH_ON = 'textures/sounds_switch_on.png';
   const SWITCH_OFF = 'textures/sounds_switch_off.png';
+  
   function updateSoundToggleUI() {
     const btn = document.getElementById('sound-toggle');
     if (!btn) return;
@@ -124,12 +101,12 @@
     if (soundEnabled) {
       btn.classList.remove('muted');
       btn.setAttribute('aria-pressed', 'false');
-      btn.title = 'Sounds: ON — click to mute';
+      btn.title = 'Sounds: ON – click to mute';
       if (img) img.src = SWITCH_ON;
     } else {
       btn.classList.add('muted');
       btn.setAttribute('aria-pressed', 'true');
-      btn.title = 'Sounds: OFF — click to unmute';
+      btn.title = 'Sounds: OFF – click to unmute';
       if (img) img.src = SWITCH_OFF;
     }
   }
@@ -144,27 +121,19 @@
       ev.preventDefault();
       const newState = !soundEnabled;
       setSoundEnabled(newState);
-      // play toggle sound regardless of whether we've enabled or disabled
       playToggleSound();
     });
     updateSoundToggleUI();
   }
 
-  // -----------------------
-  // Main app (preserves user's original code + wiring)
-  // -----------------------
   document.addEventListener('DOMContentLoaded', () => {
     wireSoundToggleButton();
 
-    // play link sound for links opening in new tabs
     document.addEventListener('click', (ev) => {
       const a = ev.target.closest('a[target="_blank"]');
-      if (a) {
-        playLink();
-      }
+      if (a) playLink();
     }, { capture: true });
 
-    // username copy-to-clipboard + cooldown (plays copy sound on success)
     document.addEventListener('click', (ev) => {
       const el = ev.target.closest('.username');
       if (!el) return;
@@ -214,7 +183,6 @@
       }[c]));
     }
 
-    /* small markdown renderer */
     function renderMarkdown(md) {
       const lines = md.replace(/\r\n/g, '\n').split('\n');
       let html = '';
@@ -305,7 +273,6 @@
       inner.style.display = 'flex';
       inner.style.flexDirection = 'column';
 
-      /* close button */
       const closeBtn = document.createElement('button');
       closeBtn.className = 'pp-recipe-close-btn';
       const closeImg = document.createElement('img');
@@ -315,10 +282,9 @@
 
       closeBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        closeRecipeModal(); // plays close sound in closeRecipeModal
+        closeRecipeModal();
       });
 
-      /* content */
       const content = document.createElement('div');
       content.className = 'pp-recipe-content';
       content.style.flex = '1';
@@ -329,7 +295,6 @@
       content.style.fontSize = '26px';
       recipeContentEl = content;
 
-      /* download button (bottom) */
       const downloadBtn = document.createElement('button');
       downloadBtn.className = 'pp-recipe-download-btn';
       const downloadImg = document.createElement('img');
@@ -341,7 +306,6 @@
         e.stopPropagation();
         if (!recipeDownloadBlob) return;
 
-        // play the download sound
         playDownload();
 
         const url = URL.createObjectURL(recipeDownloadBlob);
@@ -362,7 +326,6 @@
       inner.addEventListener('click', e => e.stopPropagation());
       overlay.addEventListener('click', e => e.stopPropagation());
 
-      /* escape key */
       window.addEventListener('keydown', (e) => {
         if (!imageModalOpen) return;
         if (e.key === 'Escape') {
@@ -404,7 +367,6 @@
     }
 
     function closeRecipeModal() {
-      // play close sound for recipe close
       playClose();
 
       if (!recipeModalEl) return;
@@ -422,7 +384,6 @@
         e.preventDefault();
         e.stopPropagation();
 
-        // play click for "view recipe" action
         playClick();
         openRecipeModal('/recipe.md');
       });
@@ -485,7 +446,7 @@
       closeBtn.appendChild(closeImg);
       closeBtn.addEventListener('click', (ev) => {
         ev.stopPropagation();
-        closeImageModal(); // closeImageModal will play close sound
+        closeImageModal();
       });
       closeBtnEl = closeBtn;
 
@@ -499,7 +460,6 @@
       prevBtn.appendChild(prevImg);
       prevBtn.addEventListener('click', (ev) => {
         ev.stopPropagation();
-        // play click for prev
         playClick();
         showPrevImage();
       });
@@ -515,7 +475,6 @@
       nextBtn.appendChild(nextImg);
       nextBtn.addEventListener('click', (ev) => {
         ev.stopPropagation();
-        // play click for next
         playClick();
         showNextImage();
       });
@@ -599,7 +558,6 @@
     }
 
     function closeImageModal() {
-      // play close sound
       playClose();
 
       if (!modalOverlayEl) return;
@@ -682,7 +640,6 @@
       if (closeBtn) {
         closeBtn.addEventListener('click', (ev) => {
           ev.stopPropagation();
-          // play close for close button
           playClose();
           closeWindow(type);
         });
@@ -692,9 +649,11 @@
     function getWindowByType(type) {
       return windows.find(w => w.dataset.type === type);
     }
+    
     function countOpenWindows() {
       return 1 + openTypes.size;
     }
+    
     function bringToFront(winEl) {
       if (!winEl) return;
       zIndexCounter += 1;
@@ -722,12 +681,12 @@
               { transform: 'translateY(-6px)' },
               { transform: 'translateY(0)' }
             ], { duration: 220, easing: 'ease-out' });
-          } catch (e) { /* ignore if animation fails */ }
+          } catch (e) {}
         }
-        console.warn('Max windows open (including main) — cannot open:', type);
+        console.warn('Max windows open (including main) – cannot open:', type);
         return;
       }
-      // If opening the projects window, play click sound
+      
       if (type === 'projects') {
         playClick();
       }
@@ -792,7 +751,7 @@
         origTop = parseFloat(winEl.style.top) || rect.top + window.scrollY;
 
         if (ev.pointerId !== undefined && winEl.setPointerCapture) {
-          try { winEl.setPointerCapture(ev.pointerId); } catch (e) { /* ignore */ }
+          try { winEl.setPointerCapture(ev.pointerId); } catch (e) {}
         }
 
         winEl.style.cursor = 'move';
@@ -814,7 +773,7 @@
         isDragging = false;
         winEl.style.cursor = 'pointer';
         if (ev.pointerId !== undefined && winEl.releasePointerCapture) {
-          try { winEl.releasePointerCapture(ev.pointerId); } catch (e) { /* ignore */ }
+          try { winEl.releasePointerCapture(ev.pointerId); } catch (e) {}
         }
         document.removeEventListener('pointermove', pointerMoveHandler);
         document.removeEventListener('pointerup', pointerUpHandler);
@@ -831,7 +790,6 @@
       dockEl.addEventListener('click', (ev) => {
         ev.preventDefault();
         if (imageModalOpen) return;
-        // play click for dock buttons
         playClick();
         openWindow(type, dockEl);
       });
@@ -852,6 +810,7 @@
     wireDock(dockSupport, 'support');
     wireDock(dockDiscord, 'discord');
     wireDock(dockMCSkin, 'mc-skin');
+    
     windows.forEach(win => {
       win.addEventListener('click', (ev) => {
         if (getComputedStyle(win).display === 'none') return;
@@ -861,6 +820,7 @@
         bringToFront(win);
       });
     });
+    
     window.addEventListener('resize', () => {
       windows.forEach(win => {
         if (typeof win.dataset.offsetX === 'undefined' || typeof win.dataset.offsetY === 'undefined') {
@@ -872,6 +832,7 @@
         modalOverlayEl.style.zIndex = String(zIndexCounter + 1000);
       }
     });
+    
     window.__pixelPortfolio = {
       openWindow,
       closeWindow,
@@ -880,6 +841,7 @@
       openImageModal,
       closeImageModal
     };
+    
     (function addProjectImageButtons() {
       const projectsWindow = windows.find(win => {
         const titleImg = win.querySelector('.window-title img');
@@ -894,7 +856,8 @@
       if (!descriptionEl) return;
       const btnContainer = document.createElement('div');
       btnContainer.className = 'project-image-buttons';
-        PROJECT_IMAGES.forEach((project, i) => {
+      
+      PROJECT_IMAGES.forEach((project, i) => {
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.textContent = project.name;
@@ -902,19 +865,16 @@
         btn.addEventListener('click', (ev) => {
             ev.preventDefault();
             ev.stopPropagation();
-            // these buttons open images — play click
             playClick();
             openImageModal(project.src, project.name);
         });
 
         btnContainer.appendChild(btn);
-        });
-
+      });
 
       descriptionEl.appendChild(btnContainer);
     })();
 
-    // Additional safety: capture clicks on any close-like elements that weren't wired explicitly.
     document.addEventListener('click', (ev) => {
       const closeEl = ev.target.closest('.close-button, .pp-modal-close-btn, .pp-recipe-close-btn');
       if (closeEl) {
@@ -922,8 +882,7 @@
       }
     }, { capture: true });
 
-  }); // DOMContentLoaded end
+  });
 
-  // Ensure UI is initialised early in case DOMContentLoaded fired before this script loaded
   try { updateSoundToggleUI(); } catch (e) {}
 })();
