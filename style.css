@@ -23,6 +23,22 @@ only screen and (max-width:1280px){
   --green: #aee2ff;
   --recipe-bg: #1f102a;
 }
+
+#sound-toggle {
+  position: fixed;
+  top: 22px;
+  right: 22px;
+  border: none;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
 html, body {
   height: 100%;
 }
@@ -61,6 +77,7 @@ body {
 }
 .main-window-title {
    margin-top: 58px;
+   cursor: pointer;
 }
 .dock {
     position: relative;

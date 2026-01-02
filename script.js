@@ -1,274 +1,432 @@
-
-
+// script.js
 (function () {
-  
-  document.addEventListener('DOMContentLoaded', () => {
-    
-    document.addEventListener('click', (ev) => {
-  const el = ev.target.closest('.username');
-  if (!el) return;
+  // -----------------------
+  // Sound players
+  // -----------------------
+  // Put these files in /sounds next to index.html:
+  // - click.mp3
+  // - click_close.mp3
+  // - click_link.mp3
+  // - click_copy.mp3
+  // - click_download.mp3
+  // - click_toggle.mp3   <-- new toggle sound
+  //
+  // Put these images in /textures:
+  // - sounds_switch_on.png
+  // - sounds_switch_off.png
 
-  ev.stopPropagation();
+  const soundFiles = {
+    click: 'sounds/click.mp3',
+    close: 'sounds/click_close.mp3',
+    link:  'sounds/click_link.mp3',
+    copy:  'sounds/click_copy.mp3',
+    download: 'sounds/click_download.mp3',
+    toggle: 'sounds/click_toggle.mp3' // toggle sound (always played on mute/unmute)
+  };
 
-  // prevent copying while cooldown is active
-  if (el.dataset.cooldown === 'true') return;
-
-  const originalText = el.dataset.originalText || el.innerText.trim();
-  if (!originalText) return;
-
-  el.dataset.originalText = originalText;
-
-  navigator.clipboard.writeText(originalText).then(() => {
-    el.dataset.cooldown = 'true';
-
-    el.innerText = 'Copied';
-    el.classList.add('copied');
-
-    setTimeout(() => {
-      el.innerText = el.dataset.originalText;
-      el.classList.remove('copied');
-      el.dataset.cooldown = 'false';
-    }, 1000);
-  }).catch(err => {
-    console.error('Copy failed:', err);
+  // preload base Audio objects
+  const sounds = {};
+  Object.keys(soundFiles).forEach(k => {
+    try {
+      const a = new Audio(soundFiles[k]);
+      a.preload = 'auto';
+      sounds[k] = a;
+    } catch (e) {
+      sounds[k] = null;
+    }
   });
-});
+
+  // persisted sound enabled flag (default true)
+  let soundEnabled = localStorage.getItem('pp_sounds_enabled') !== 'false';
+
+  function setSoundEnabled(enabled) {
+    soundEnabled = !!enabled;
+    try {
+      localStorage.setItem('pp_sounds_enabled', soundEnabled ? 'true' : 'false');
+    } catch (e) { /* ignore storage errors */ }
+    if (!soundEnabled) {
+      // stop/reset base audio nodes (do not worry about toggle here; we'll play toggle after)
+      Object.keys(sounds).forEach(key => {
+        try {
+          const a = sounds[key];
+          if (a && !a.paused) {
+            a.pause();
+            a.currentTime = 0;
+          }
+        } catch (e) {}
+      });
+    }
+    updateSoundToggleUI();
+  }
+
+  // Helper: play sound by key (respects soundEnabled)
+  function playSound(key) {
+    if (!soundEnabled) return;
+    const base = sounds[key];
+    if (!base) return;
+    try {
+      base.currentTime = 0;
+      const p = base.play();
+      if (p && p.catch) {
+        p.catch(() => {
+          try {
+            const clone = base.cloneNode();
+            clone.play().catch(() => {});
+          } catch (e) {}
+        });
+      }
+    } catch (err) {
+      try {
+        const a = new Audio(soundFiles[key]);
+        a.play().catch(() => {});
+      } catch (e) {}
+    }
+  }
+
+  // Play toggle sound regardless of soundEnabled (we want audible feedback even when muting)
+  function playToggleSound() {
+    const base = sounds.toggle;
+    if (!base) return;
+    try {
+      base.currentTime = 0;
+      const p = base.play();
+      if (p && p.catch) {
+        p.catch(() => {
+          try {
+            const clone = base.cloneNode();
+            clone.play().catch(() => {});
+          } catch (e) {}
+        });
+      }
+    } catch (err) {
+      try {
+        const a = new Audio(soundFiles.toggle);
+        a.play().catch(() => {});
+      } catch (e) {}
+    }
+  }
+
+  function playClick() { playSound('click'); }
+  function playClose() { playSound('close'); }
+  function playLink() { playSound('link'); }
+  function playCopy() { playSound('copy'); }
+  function playDownload() { playSound('download'); }
+
+  // -----------------------
+  // Sound toggle UI helpers
+  // -----------------------
+  const SWITCH_ON = 'textures/sounds_switch_on.png';
+  const SWITCH_OFF = 'textures/sounds_switch_off.png';
+  function updateSoundToggleUI() {
+    const btn = document.getElementById('sound-toggle');
+    if (!btn) return;
+    const img = btn.querySelector('img');
+    if (soundEnabled) {
+      btn.classList.remove('muted');
+      btn.setAttribute('aria-pressed', 'false');
+      btn.title = 'Sounds: ON — click to mute';
+      if (img) img.src = SWITCH_ON;
+    } else {
+      btn.classList.add('muted');
+      btn.setAttribute('aria-pressed', 'true');
+      btn.title = 'Sounds: OFF — click to unmute';
+      if (img) img.src = SWITCH_OFF;
+    }
+  }
+
+  function wireSoundToggleButton() {
+    const btn = document.getElementById('sound-toggle');
+    if (!btn) return;
+    const img = btn.querySelector('img');
+    if (img) img.draggable = false;
+
+    btn.addEventListener('click', (ev) => {
+      ev.preventDefault();
+      const newState = !soundEnabled;
+      setSoundEnabled(newState);
+      // play toggle sound regardless of whether we've enabled or disabled
+      playToggleSound();
+    });
+    updateSoundToggleUI();
+  }
+
+  // -----------------------
+  // Main app (preserves user's original code + wiring)
+  // -----------------------
+  document.addEventListener('DOMContentLoaded', () => {
+    wireSoundToggleButton();
+
+    // play link sound for links opening in new tabs
+    document.addEventListener('click', (ev) => {
+      const a = ev.target.closest('a[target="_blank"]');
+      if (a) {
+        playLink();
+      }
+    }, { capture: true });
+
+    // username copy-to-clipboard + cooldown (plays copy sound on success)
+    document.addEventListener('click', (ev) => {
+      const el = ev.target.closest('.username');
+      if (!el) return;
+
+      ev.stopPropagation();
+
+      if (el.dataset.cooldown === 'true') return;
+
+      const originalText = el.dataset.originalText || el.innerText.trim();
+      if (!originalText) return;
+
+      el.dataset.originalText = originalText;
+
+      navigator.clipboard.writeText(originalText).then(() => {
+        playCopy();
+
+        el.dataset.cooldown = 'true';
+        el.innerText = 'Copied';
+        el.classList.add('copied');
+
+        setTimeout(() => {
+          el.innerText = el.dataset.originalText;
+          el.classList.remove('copied');
+          el.dataset.cooldown = 'false';
+        }, 1000);
+      }).catch(err => {
+        console.error('Copy failed:', err);
+      });
+    });
 
     const MAX_WINDOWS_INCLUDING_MAIN = 5;
     let zIndexCounter = 10;
     const openTypes = new Set();
 
     let imageModalOpen = false;
-/* ===========================
-   Recipe Modal (FULL CODE)
-   =========================== */
+    let recipeModalEl = null;
+    let recipeContentEl = null;
+    let recipeDownloadBlob = null;
 
-let recipeModalEl = null;
-let recipeContentEl = null;
-let recipeDownloadBlob = null;
-
-/* ---------- utils ---------- */
-
-function escapeHtml(str) {
-  return String(str).replace(/[&<>"']/g, c => ({
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#39;'
-  }[c]));
-}
-
-/* very small markdown renderer */
-function renderMarkdown(md) {
-  const lines = md.replace(/\r\n/g, '\n').split('\n');
-  let html = '';
-  let inCode = false;
-  let inList = false;
-
-  const closeList = () => {
-    if (inList) {
-      html += '</ul>';
-      inList = false;
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, c => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      }[c]));
     }
-  };
 
-  const inline = (s) => {
-    s = escapeHtml(s);
-    s = s.replace(/`([^`]+)`/g, '<code>$1</code>');
-    s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-    s = s.replace(/\*([^*]+)\*/g, '<em>$1</em>');
-    s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g,
-      (_, t, u) => `<a class="is-link" href="${escapeHtml(u)}" target="_blank">${t}</a>`
-    );
-    return s;
-  };
+    /* small markdown renderer */
+    function renderMarkdown(md) {
+      const lines = md.replace(/\r\n/g, '\n').split('\n');
+      let html = '';
+      let inCode = false;
+      let inList = false;
 
-  for (const line of lines) {
-    if (line.trim().startsWith('```')) {
-      if (!inCode) {
-        inCode = true;
-        html += '<pre><code>';
-      } else {
-        inCode = false;
-        html += '</code></pre>';
+      const closeList = () => {
+        if (inList) {
+          html += '</ul>';
+          inList = false;
+        }
+      };
+
+      const inline = (s) => {
+        s = escapeHtml(s);
+        s = s.replace(/`([^`]+)`/g, '<code>$1</code>');
+        s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+        s = s.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+        s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g,
+          (_, t, u) => `<a class="is-link" href="${escapeHtml(u)}" target="_blank">${t}</a>`
+        );
+        return s;
+      };
+
+      for (const line of lines) {
+        if (line.trim().startsWith('```')) {
+          if (!inCode) {
+            inCode = true;
+            html += '<pre><code>';
+          } else {
+            inCode = false;
+            html += '</code></pre>';
+          }
+          continue;
+        }
+
+        if (inCode) {
+          html += escapeHtml(line) + '\n';
+          continue;
+        }
+
+        const h = line.match(/^(#{1,6})\s+(.*)$/);
+        if (h) {
+          closeList();
+          html += `<h${h[1].length}>${inline(h[2])}</h${h[1].length}>`;
+          continue;
+        }
+
+        const li = line.match(/^\s*[-*]\s+(.*)$/);
+        if (li) {
+          if (!inList) {
+            inList = true;
+            html += '<ul>';
+          }
+          html += `<li>${inline(li[1])}</li>`;
+          continue;
+        }
+
+        if (line.trim() === '') {
+          closeList();
+          html += '<br>';
+          continue;
+        }
+
+        closeList();
+        html += `<p>${inline(line)}</p>`;
       }
-      continue;
-    }
 
-    if (inCode) {
-      html += escapeHtml(line) + '\n';
-      continue;
-    }
-
-    const h = line.match(/^(#{1,6})\s+(.*)$/);
-    if (h) {
       closeList();
-      html += `<h${h[1].length}>${inline(h[2])}</h${h[1].length}>`;
-      continue;
+      if (inCode) html += '</code></pre>';
+
+      return html;
     }
 
-    const li = line.match(/^\s*[-*]\s+(.*)$/);
-    if (li) {
-      if (!inList) {
-        inList = true;
-        html += '<ul>';
-      }
-      html += `<li>${inline(li[1])}</li>`;
-      continue;
+    function createRecipeModalIfNeeded() {
+      if (recipeModalEl) return recipeModalEl;
+
+      const overlay = document.createElement('div');
+      overlay.className = 'pp-modal-overlay';
+      overlay.style.display = 'none';
+      overlay.style.zIndex = String(zIndexCounter + 1000);
+
+      const inner = document.createElement('div');
+      inner.className = 'pp-recipe-inner';
+      inner.style.position = 'relative';
+      inner.style.maxWidth = '900px';
+      inner.style.maxHeight = '85vh';
+      inner.style.display = 'flex';
+      inner.style.flexDirection = 'column';
+
+      /* close button */
+      const closeBtn = document.createElement('button');
+      closeBtn.className = 'pp-recipe-close-btn';
+      const closeImg = document.createElement('img');
+      closeImg.src = 'textures/close.png';
+      closeImg.draggable = false;
+      closeBtn.appendChild(closeImg);
+
+      closeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        closeRecipeModal(); // plays close sound in closeRecipeModal
+      });
+
+      /* content */
+      const content = document.createElement('div');
+      content.className = 'pp-recipe-content';
+      content.style.flex = '1';
+      content.style.overflow = 'auto';
+      content.style.padding = '22px';
+      content.style.color = 'var(--text)';
+      content.style.fontFamily = 'Micro 5, sans-serif';
+      content.style.fontSize = '26px';
+      recipeContentEl = content;
+
+      /* download button (bottom) */
+      const downloadBtn = document.createElement('button');
+      downloadBtn.className = 'pp-recipe-download-btn';
+      const downloadImg = document.createElement('img');
+      downloadImg.src = 'textures/download.png';
+      downloadImg.draggable = false;
+      downloadBtn.appendChild(downloadImg);
+
+      downloadBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (!recipeDownloadBlob) return;
+
+        // play the download sound
+        playDownload();
+
+        const url = URL.createObjectURL(recipeDownloadBlob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'recipe.md';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      });
+
+      inner.appendChild(closeBtn);
+      inner.appendChild(content);
+      inner.appendChild(downloadBtn);
+      overlay.appendChild(inner);
+
+      inner.addEventListener('click', e => e.stopPropagation());
+      overlay.addEventListener('click', e => e.stopPropagation());
+
+      /* escape key */
+      window.addEventListener('keydown', (e) => {
+        if (!imageModalOpen) return;
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          closeRecipeModal();
+        }
+      });
+
+      document.body.appendChild(overlay);
+      recipeModalEl = overlay;
+      return overlay;
     }
 
-    if (line.trim() === '') {
-      closeList();
-      html += '<br>';
-      continue;
+    function openRecipeModal(path = '/recipe.md') {
+      if (imageModalOpen) return;
+
+      const modal = createRecipeModalIfNeeded();
+      modal.style.display = 'flex';
+      modal.style.zIndex = String(zIndexCounter + 1000);
+
+      imageModalOpen = true;
+      document.body.classList.add('pp-modal-open');
+      windows.forEach(w => w.dataset.modalOpen = 'true');
+
+      fetch(path, { cache: 'no-cache' })
+        .then(r => {
+          if (!r.ok) throw new Error(`HTTP ${r.status}`);
+          return r.text();
+        })
+        .then(text => {
+          recipeDownloadBlob = new Blob([text], { type: 'text/markdown' });
+          recipeContentEl.innerHTML = renderMarkdown(text);
+        })
+        .catch(err => {
+          recipeContentEl.innerHTML =
+            `<p><strong>Failed to load recipe.md</strong></p><pre>${escapeHtml(err)}</pre>`;
+          recipeDownloadBlob = null;
+        });
     }
 
-    closeList();
-    html += `<p>${inline(line)}</p>`;
-  }
+    function closeRecipeModal() {
+      // play close sound for recipe close
+      playClose();
 
-  closeList();
-  if (inCode) html += '</code></pre>';
-
-  return html;
-}
-
-/* ---------- modal creation ---------- */
-
-function createRecipeModalIfNeeded() {
-  if (recipeModalEl) return recipeModalEl;
-
-  const overlay = document.createElement('div');
-  overlay.className = 'pp-modal-overlay';
-  overlay.style.display = 'none';
-  overlay.style.zIndex = String(zIndexCounter + 1000);
-
-  const inner = document.createElement('div');
-  inner.className = 'pp-recipe-inner';
-  inner.style.position = 'relative';
-  inner.style.maxWidth = '900px';
-  inner.style.maxHeight = '85vh';
-  inner.style.display = 'flex';
-  inner.style.flexDirection = 'column';
-
-  /* close button */
-  const closeBtn = document.createElement('button');
-  closeBtn.className = 'pp-recipe-close-btn';
-  const closeImg = document.createElement('img');
-  closeImg.src = 'textures/close.png';
-  closeImg.draggable = false;
-  closeBtn.appendChild(closeImg);
-
-  closeBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    closeRecipeModal();
-  });
-
-  /* content */
-  const content = document.createElement('div');
-  content.className = 'pp-recipe-content';
-  content.style.flex = '1';
-  content.style.overflow = 'auto';
-  content.style.padding = '22px';
-  content.style.color = 'var(--text)';
-  content.style.fontFamily = 'Micro 5, sans-serif';
-  content.style.fontSize = '26px';
-  recipeContentEl = content;
-
-  /* download button (bottom) */
-  const downloadBtn = document.createElement('button');
-  downloadBtn.className = 'pp-recipe-download-btn';
-  const downloadImg = document.createElement('img');
-  downloadImg.src = 'textures/download.png';
-  downloadImg.draggable = false;
-  downloadBtn.appendChild(downloadImg);
-
-  downloadBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    if (!recipeDownloadBlob) return;
-
-    const url = URL.createObjectURL(recipeDownloadBlob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'recipe.md';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-  });
-
-  inner.appendChild(closeBtn);
-  inner.appendChild(content);
-  inner.appendChild(downloadBtn);
-  overlay.appendChild(inner);
-
-  inner.addEventListener('click', e => e.stopPropagation());
-  overlay.addEventListener('click', e => e.stopPropagation());
-
-  /* escape key */
-  window.addEventListener('keydown', (e) => {
-    if (!imageModalOpen) return;
-    if (e.key === 'Escape') {
-      e.preventDefault();
-      closeRecipeModal();
-    }
-  });
-
-  document.body.appendChild(overlay);
-  recipeModalEl = overlay;
-  return overlay;
-}
-
-/* ---------- open / close ---------- */
-
-function openRecipeModal(path = '/recipe.md') {
-  if (imageModalOpen) return;
-
-  const modal = createRecipeModalIfNeeded();
-  modal.style.display = 'flex';
-  modal.style.zIndex = String(zIndexCounter + 1000);
-
-  imageModalOpen = true;
-  document.body.classList.add('pp-modal-open');
-  windows.forEach(w => w.dataset.modalOpen = 'true');
-
-  fetch(path, { cache: 'no-cache' })
-    .then(r => {
-      if (!r.ok) throw new Error(`HTTP ${r.status}`);
-      return r.text();
-    })
-    .then(text => {
-      recipeDownloadBlob = new Blob([text], { type: 'text/markdown' });
-      recipeContentEl.innerHTML = renderMarkdown(text);
-    })
-    .catch(err => {
-      recipeContentEl.innerHTML =
-        `<p><strong>Failed to load recipe.md</strong></p><pre>${escapeHtml(err)}</pre>`;
+      if (!recipeModalEl) return;
+      recipeModalEl.style.display = 'none';
+      imageModalOpen = false;
+      document.body.classList.remove('pp-modal-open');
+      windows.forEach(w => delete w.dataset.modalOpen);
+      recipeContentEl.innerHTML = '';
       recipeDownloadBlob = null;
+    }
+
+    document.querySelectorAll('.main-window-description').forEach(el => {
+      el.style.cursor = 'pointer';
+      el.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        // play click for "view recipe" action
+        playClick();
+        openRecipeModal('/recipe.md');
+      });
     });
-}
-
-function closeRecipeModal() {
-  if (!recipeModalEl) return;
-  recipeModalEl.style.display = 'none';
-  imageModalOpen = false;
-  document.body.classList.remove('pp-modal-open');
-  windows.forEach(w => delete w.dataset.modalOpen);
-  recipeContentEl.innerHTML = '';
-  recipeDownloadBlob = null;
-}
-
-/* ---------- trigger ---------- */
-
-document.querySelectorAll('.main-window-description').forEach(el => {
-  el.style.cursor = 'pointer';
-  el.addEventListener('click', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    openRecipeModal('/recipe.md');
-  });
-});
 
     const PROJECT_IMAGES = [
         { src: 'textures/projects/project_1.png', name: 'expanded v2' },
@@ -277,7 +435,6 @@ document.querySelectorAll('.main-window-description').forEach(el => {
         { src: 'textures/projects/project_4.png', name: 'just icons' },
         { src: 'textures/projects/project_5.png', name: 'just crates v2' }
     ];
-
 
     let currentImageIndex = -1;
 
@@ -328,7 +485,7 @@ document.querySelectorAll('.main-window-description').forEach(el => {
       closeBtn.appendChild(closeImg);
       closeBtn.addEventListener('click', (ev) => {
         ev.stopPropagation();
-        closeImageModal();
+        closeImageModal(); // closeImageModal will play close sound
       });
       closeBtnEl = closeBtn;
 
@@ -342,6 +499,8 @@ document.querySelectorAll('.main-window-description').forEach(el => {
       prevBtn.appendChild(prevImg);
       prevBtn.addEventListener('click', (ev) => {
         ev.stopPropagation();
+        // play click for prev
+        playClick();
         showPrevImage();
       });
       prevArrowBtn = prevBtn;
@@ -356,6 +515,8 @@ document.querySelectorAll('.main-window-description').forEach(el => {
       nextBtn.appendChild(nextImg);
       nextBtn.addEventListener('click', (ev) => {
         ev.stopPropagation();
+        // play click for next
+        playClick();
         showNextImage();
       });
       nextArrowBtn = nextBtn;
@@ -376,9 +537,11 @@ document.querySelectorAll('.main-window-description').forEach(el => {
           closeImageModal();
         } else if (ev.key === 'ArrowLeft') {
           ev.preventDefault();
+          playClick();
           showPrevImage();
         } else if (ev.key === 'ArrowRight') {
           ev.preventDefault();
+          playClick();
           showNextImage();
         }
       });
@@ -406,7 +569,6 @@ document.querySelectorAll('.main-window-description').forEach(el => {
         img.alt = PROJECT_IMAGES[idx].name;
     }
 
-
     function showPrevImage() {
       if (currentImageIndex === -1) return;
       showImageByIndex(currentImageIndex - 1);
@@ -418,7 +580,6 @@ document.querySelectorAll('.main-window-description').forEach(el => {
     }
 
     function openImageModal(imageSrc, altText = '') {
-      // create if missing
       const modal = createImageModalIfNeeded();
       const idx = PROJECT_IMAGES.findIndex(p => p.src === imageSrc);
       if (idx >= 0) {
@@ -438,6 +599,9 @@ document.querySelectorAll('.main-window-description').forEach(el => {
     }
 
     function closeImageModal() {
+      // play close sound
+      playClose();
+
       if (!modalOverlayEl) return;
       modalOverlayEl.style.display = 'none';
       imageModalOpen = false;
@@ -455,7 +619,6 @@ document.querySelectorAll('.main-window-description').forEach(el => {
       if (text.includes('mc skin')) return 'mc-skin';
       if (text.includes('support')) return 'support';
       if (text.includes('discord')) return 'discord';
-      // fallback: 'window-#'
       return `window-${fallbackIndex}`;
     }
 
@@ -519,6 +682,8 @@ document.querySelectorAll('.main-window-description').forEach(el => {
       if (closeBtn) {
         closeBtn.addEventListener('click', (ev) => {
           ev.stopPropagation();
+          // play close for close button
+          playClose();
           closeWindow(type);
         });
       }
@@ -562,6 +727,11 @@ document.querySelectorAll('.main-window-description').forEach(el => {
         console.warn('Max windows open (including main) — cannot open:', type);
         return;
       }
+      // If opening the projects window, play click sound
+      if (type === 'projects') {
+        playClick();
+      }
+
       winEl.style.display = 'block';
       winEl.dataset.open = 'true';
       openTypes.add(type);
@@ -573,6 +743,8 @@ document.querySelectorAll('.main-window-description').forEach(el => {
     }
 
     function closeWindow(type) {
+      playClose();
+
       const winEl = getWindowByType(type);
       if (!winEl) return;
       winEl.style.display = 'none';
@@ -659,6 +831,8 @@ document.querySelectorAll('.main-window-description').forEach(el => {
       dockEl.addEventListener('click', (ev) => {
         ev.preventDefault();
         if (imageModalOpen) return;
+        // play click for dock buttons
+        playClick();
         openWindow(type, dockEl);
       });
     }
@@ -728,6 +902,8 @@ document.querySelectorAll('.main-window-description').forEach(el => {
         btn.addEventListener('click', (ev) => {
             ev.preventDefault();
             ev.stopPropagation();
+            // these buttons open images — play click
+            playClick();
             openImageModal(project.src, project.name);
         });
 
@@ -737,5 +913,17 @@ document.querySelectorAll('.main-window-description').forEach(el => {
 
       descriptionEl.appendChild(btnContainer);
     })();
-  });
+
+    // Additional safety: capture clicks on any close-like elements that weren't wired explicitly.
+    document.addEventListener('click', (ev) => {
+      const closeEl = ev.target.closest('.close-button, .pp-modal-close-btn, .pp-recipe-close-btn');
+      if (closeEl) {
+        playClose();
+      }
+    }, { capture: true });
+
+  }); // DOMContentLoaded end
+
+  // Ensure UI is initialised early in case DOMContentLoaded fired before this script loaded
+  try { updateSoundToggleUI(); } catch (e) {}
 })();
