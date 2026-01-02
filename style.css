@@ -129,6 +129,8 @@ body {
     color: var(--subtitle);
     font-size: 26px;
     text-shadow: 3px 3px 0px #873555;
+    display: inline;
+    width: fit-content;
 }
 
 .main-window-description:hover{
@@ -190,7 +192,9 @@ body {
 .is-link:hover{
   color: var(--highlight);
 }
-
+.username {
+  width: fit-content;
+}
 .username:hover {
   color: var(--highlight);
 }
