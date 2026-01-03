@@ -248,7 +248,6 @@ body {
   justify-content: center;
   padding: 4px;
   border-radius: 6px;
-  box-shadow: 0 2px 8px rgba(20,24,46,0.35);
   right: 8px;
 }
 
@@ -265,7 +264,6 @@ body {
   max-height: calc(75vh - 16px);
   object-fit: contain;
   display: block;
-  box-shadow: 0 8px 30px rgba(20,24,46,0.5);
   user-select: none;
   -webkit-user-drag: none;
 }
