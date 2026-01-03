@@ -228,7 +228,8 @@ body {
 }
 
 .pp-recipe-inner {
-  background: var(--recipe-bg);
+  background-image: url("textures/recipe.png");
+  text-shadow: 3px 3px 0px #873555;
   padding: 20px;
 }
 

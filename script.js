@@ -227,7 +227,7 @@
         const h = line.match(/^(#{1,6})\s+(.*)$/);
         if (h) {
           closeList();
-          html += `<h${h[1].length}>${inline(h[2])}</h${h[1].length}>`;
+          html += `<h${h[1].length} style="color: var(--text)">${inline(h[2])}</h${h[1].length}>`;
           continue;
         }
 
@@ -290,7 +290,7 @@
       content.style.flex = '1';
       content.style.overflow = 'auto';
       content.style.padding = '22px';
-      content.style.color = 'var(--text)';
+      content.style.color = 'var(--subtitle)';
       content.style.fontFamily = 'Micro 5, sans-serif';
       content.style.fontSize = '26px';
       recipeContentEl = content;
@@ -326,13 +326,36 @@
       inner.addEventListener('click', e => e.stopPropagation());
       overlay.addEventListener('click', e => e.stopPropagation());
 
-      window.addEventListener('keydown', (e) => {
-        if (!imageModalOpen) return;
-        if (e.key === 'Escape') {
-          e.preventDefault();
-          closeRecipeModal();
-        }
-      });
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' || e.key === 'Esc') {
+    if (recipeModalEl && recipeModalEl.style.display !== 'none') {
+      e.preventDefault();
+      closeRecipeModal();
+    }
+  }
+  
+  if (imageModalOpen) return;
+  
+  if (openTypes.size === 0) return;
+  
+  let topWindow = null;
+  let topZ = -1;
+  openTypes.forEach(type => {
+    const win = getWindowByType(type);
+    if (win) {
+      const z = parseInt(win.style.zIndex) || 0;
+      if (z > topZ) {
+        topZ = z;
+        topWindow = type;
+      }
+    }
+  });
+  
+  if (topWindow) {
+    e.preventDefault();
+    closeWindow(topWindow);
+  }
+});
 
       document.body.appendChild(overlay);
       recipeModalEl = overlay;
