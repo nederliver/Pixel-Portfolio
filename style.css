@@ -2,8 +2,9 @@
 
 :root{
   --text: #ffffff;
-  --subtitle: #d9bdc8;
-  --highlight: #fcef8d;
+  --text-shadow: #254d70;
+  --subtitle: #b2d942;
+  --highlight: #fcf660;
   --green: #aee2ff;
   --recipe-bg: #1f102a;
 }
@@ -93,7 +94,7 @@ body {
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none; 
-    background-color: #1f102a;
+    background-color: #201533;
 }
 
 .main-window {
@@ -128,7 +129,7 @@ body {
 .main-window-description{
     color: var(--subtitle);
     font-size: 26px;
-    text-shadow: 3px 3px 0px #873555;
+    text-shadow: 3px 3px 0px var(--text-shadow);
     display: inline;
     width: fit-content;
 }
@@ -141,7 +142,7 @@ body {
     margin-top: 8px;
     color: var(--text);
     font-size: 40px;
-    text-shadow: 4px 4px 0px #873555
+    text-shadow: 4px 4px 0px var(--text-shadow)
 }
 
 .window {
@@ -166,7 +167,7 @@ body {
     margin-left: 45px;
     color: var(--subtitle);
     font-size: 26px;
-    text-shadow: 3px 3px 0px #873555;
+    text-shadow: 3px 3px 0px var(--text-shadow);
     padding-bottom: 8px;
 }
 
@@ -174,7 +175,7 @@ body {
     margin-left: 45px;
     color: var(--text);
     font-size: 35px;
-    text-shadow: 4px 4px 0px #873555
+    text-shadow: 4px 4px 0px var(--text-shadow)
 }
 
 .close-button {
@@ -228,9 +229,24 @@ body {
 }
 
 .pp-recipe-inner {
+  position: relative;
+
   background-image: url("textures/recipe.png");
-  text-shadow: 3px 3px 0px #873555;
-  padding: 20px;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;   /* stretch image to container */
+  background-position: center;
+
+  width: 695px;   /* set to your recipe image width */
+  height: 828px;  /* set to your recipe image height */
+
+  box-sizing: border-box;
+  padding: 22px 22px 30px 22px; /* adjust to match visible text area */
+
+  text-shadow: 3px 3px 0px var(--text-shadow);
+
+  overflow: hidden;          /* prevents text from spilling out */
+  word-wrap: break-word;
+  text-align: left;
 }
 
 .pp-recipe-close-btn, .pp-modal-close-btn {
@@ -300,7 +316,7 @@ body.pp-modal-open {
   cursor: pointer;
   font-size: 36px; 
   color: var(--text);
-  text-shadow: 3px 3px 0px #873555;
+  text-shadow: 3px 3px 0px var(--text-shadow);
   text-decoration: none;
   display: inline;
   width: fit-content;

@@ -292,7 +292,7 @@
       content.style.padding = '22px';
       content.style.color = 'var(--subtitle)';
       content.style.fontFamily = 'Micro 5, sans-serif';
-      content.style.fontSize = '26px';
+      content.style.fontSize = '25px';
       recipeContentEl = content;
 
       const downloadBtn = document.createElement('button');
